@@ -31,13 +31,13 @@ Each cognitive task is organized into its own directory, containing a series of 
 ## Experiment Structure
 Each experiment follows the same structure:
 
-# question.txt: 
+### question.txt: 
 Contains the question posed to the VLM.
-# correct_answer.txt: 
+### correct_answer.txt: 
 Contains the expected correct answer.
-# media/: 
+### media/: 
 A folder containing all necessary media files for the experiment, labeled numerically (e.g., 1, 2, 3).
-# Cognitive Tasks
+### Cognitive Tasks
 - Mechanical Reasoning: Experiments designed to test the VLM's ability to understand and reason about mechanical systems.
 - Perspective-Taking: Experiments that assess the VLM's capacity to adopt different viewpoints or understand situations from another's perspective.
 - Law of Conservation: Experiments focusing on the VLM's understanding of conservation principles, such as mass, volume, and number conservation.

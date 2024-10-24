@@ -31,9 +31,9 @@ Each cognitive task is organized into its own directory, containing a series of 
 # Experiment Structure
 Each experiment follows the same structure:
 
-question.txt: Contains the question posed to the VLM.
-correct_answer.txt: Contains the expected correct answer.
-media/: A folder containing all necessary media files for the experiment, labeled numerically (e.g., 1, 2, 3).
+- question.txt: Contains the question posed to the VLM.
+- correct_answer.txt: Contains the expected correct answer.
+- media/: A folder containing all necessary media files for the experiment, labeled numerically (e.g., 1, 2, 3).
 Cognitive Tasks
 Mechanical Reasoning
 Experiments designed to test the VLM's ability to understand and reason about mechanical systems.

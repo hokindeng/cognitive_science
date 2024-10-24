@@ -43,6 +43,12 @@ A folder containing all necessary media files for the experiment, labeled numeri
 - Law of Conservation: Experiments focusing on the VLM's understanding of conservation principles, such as mass, volume, and number conservation.
 
 ## How to Use
+
+Run code, 
+```
+python gemini_experiment.py Mechanical_Reasoning Experiment_1
+```
+
 - Navigate to the desired cognitive task directory (e.g., Mechanical_Reasoning).
 - Select an experiment folder (e.g., Experiment_1).
 - Read the question.txt file to understand the task.

@@ -7,6 +7,7 @@ Law of Conservation
 Each cognitive task is organized into its own directory, containing a series of experiments labeled sequentially.
 
 Repository Structure
+```
 ├── Mechanical_Reasoning/
 │   ├── Experiment_1/
 │   │   ├── question.txt
@@ -41,6 +42,7 @@ Repository Structure
 │   │   └── ...
 │   └── ...
 └── README.md
+```
 
 Experiment Structure
 Each experiment follows the same structure:

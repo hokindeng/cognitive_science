@@ -41,7 +41,7 @@ A folder containing all necessary media files for the experiment, labeled numeri
 
 Run code, 
 ```
-python gpt.py --dir data/GPT_Experiment_Mechanical_Reasoning
+python gpt.py --dir data/dezhi_special
 ```
 
 Clean repo,

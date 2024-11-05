@@ -1,0 +1,548 @@
+---
+title: "Untitled"
+output: html_document
+date: "2024-10-18"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(dplyr)
+data <- read.csv("/Users/sun/Desktop/data/Updated_mechanical_reasoning 2.csv")
+head(data)
+
+correct_answers <- data[, 10]
+model_columns <- data[, 11:ncol(data)]
+
+accuracy_results <- data.frame(Model = character(), Accuracy = numeric(), stringsAsFactors = FALSE)
+
+
+extract_core_answer <- function(answer) {
+
+  core_answer <- sub("([A-Za-z]+).*", "\\1", answer)
+  return(tolower(core_answer))
+}
+
+for (model in names(model_columns)) {
+  model_answers <- model_columns[[model]]
+  
+  correct <- tolower(correct_answers)
+  answers <- sapply(model_answers, extract_core_answer)
+  
+  answers[answers == "none"] <- "incorrect"
+  
+  correct_predictions <- sum(answers == correct)
+  total_valid <- length(answers)
+  
+  accuracy <- correct_predictions / total_valid
+
+  accuracy_results <- rbind(accuracy_results, data.frame(Model = model, Accuracy = accuracy))
+}
+
+print(accuracy_results)
+```
+```{r}
+library(dplyr)
+
+correct_answers <- data[, 10]
+model_columns <- data[, 11:ncol(data)]
+
+sec_labels <- data[, "Sec..Label"]
+
+extract_core_answer <- function(answer) {
+  core_answer <- sub("([A-Za-z]+).*", "\\1", answer)
+  return(tolower(core_answer))
+}
+
+accuracy_results <- data.frame()
+
+for (label in unique(sec_labels)) {
+  label_data <- data[sec_labels == label, ]
+
+  category_size <- nrow(label_data)
+  
+  correct_answers <- tolower(label_data[, 10])
+  model_columns <- label_data[, 11:ncol(data)]
+  
+  category_accuracy <- data.frame(Model = character(), Accuracy = numeric(), stringsAsFactors = FALSE)
+  
+  for (model in names(model_columns)) {
+    model_answers <- model_columns[[model]]
+    
+    answers <- sapply(model_answers, extract_core_answer)
+    
+    answers[answers == "none"] <- "incorrect"
+    
+    correct_predictions <- sum(answers == correct_answers)
+    total_valid <- length(answers)
+    
+    accuracy <- correct_predictions / total_valid
+    
+    category_accuracy <- rbind(category_accuracy, data.frame(Model = model, Accuracy = accuracy))
+  }
+  
+  category_accuracy <- category_accuracy %>% arrange(desc(Accuracy))
+  
+  cat("\nSec.Label: ", label, "\n")
+  cat("Number of questions in this category: ", category_size, "\n")
+  print(category_accuracy)
+}
+
+```
+
+```{r}
+library(ggplot2)
+
+extract_core_answer <- function(answer) {
+  core_answer <- sub("([A-Za-z]+).*", "\\1", answer)
+  return(tolower(core_answer))
+}
+
+accuracy_data <- data.frame()
+
+for (label in unique(sec_labels)) {
+  label_data <- data[sec_labels == label, ]
+  correct_answers <- tolower(label_data[, 10])
+  model_columns <- label_data[, 11:ncol(data)]
+  
+  for (model in names(model_columns)) {
+    model_answers <- model_columns[[model]]
+    answers <- sapply(model_answers, extract_core_answer)
+    answers[answers == "none"] <- "incorrect"
+    correct_predictions <- sum(answers == correct_answers)
+    total_valid <- length(answers)
+    accuracy <- correct_predictions / total_valid
+    
+    accuracy_data <- rbind(accuracy_data, data.frame(Sec.Label = label, Model = model, Accuracy = accuracy))
+  }
+}
+
+for (label in unique(accuracy_data$Sec.Label)) {
+  label_data <- accuracy_data[accuracy_data$Sec.Label == label, ]
+  
+  label_data <- label_data[order(-label_data$Accuracy), ]
+  
+  plot <- ggplot(label_data, aes(x = reorder(Model, -Accuracy), y = Accuracy)) +
+    geom_bar(stat = "identity", position = "dodge", fill = "grey") +
+    geom_text(aes(label = round(Accuracy, 2)), hjust = -0.1) +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+    labs(title = paste("Accuracy of Models for Sec.Label:", label), x = "Model", y = "Accuracy") +
+    coord_flip() +  
+    ylim(0, 1) +  
+    theme(legend.position = "none")
+  
+  print(plot)
+}
+
+```
+```{r}
+
+library(fmsb)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+extract_core_answer <- function(answer) {
+  core_answer <- sub("([A-Za-z]+).*", "\\1", answer)
+  return(tolower(core_answer))
+}
+
+accuracy_data <- data.frame()
+
+for (label in unique(sec_labels)) {
+  label_data <- data[sec_labels == label, ]
+  correct_answers <- tolower(label_data[, 10])
+  model_columns <- label_data[, 11:ncol(data)]
+  
+  for (model in names(model_columns)) {
+    model_answers <- model_columns[[model]]
+    answers <- sapply(model_answers, extract_core_answer)
+    answers[answers == "none"] <- "incorrect"
+    correct_predictions <- sum(answers == correct_answers)
+    total_valid <- length(answers)
+    accuracy <- correct_predictions / total_valid
+    
+    accuracy_data <- rbind(accuracy_data, data.frame(Sec.Label = label, Model = model, Accuracy = accuracy))
+  }
+}
+
+accuracy_wide <- accuracy_data %>%
+  pivot_wider(names_from = Sec.Label, values_from = Accuracy) %>%
+  group_by(Model) %>%
+  summarise(across(everything(), mean, na.rm = TRUE)) 
+
+
+for (model in unique(accuracy_wide$Model)) {
+  model_data <- accuracy_wide %>% filter(Model == model) %>% select(-Model)
+  
+  radar_data <- rbind(rep(1, ncol(model_data)), rep(0, ncol(model_data)), model_data)
+  
+  radarchart(radar_data, axistype = 1,
+             pcol = rgb(0.2, 0.5, 0.5, 0.9), 
+             pfcol = rgb(0.2, 0.5, 0.5, 0.5), 
+             plwd = 4, 
+             cglcol = "grey",  
+             cglty = 1, 
+             axislabcol = "grey", 
+             caxislabels = c(0, 0.25, 0.5, 0.75, 1),
+             cglwd = 0.8, 
+             vlcex = 0.8
+  )
+  
+  title(main = paste("Radar Chart for Model:", model))
+}
+
+```
+```{r}
+library(dplyr)
+
+data <- read.csv("/Users/sun/Desktop/data/Updated_mechanical_reasoning 2.csv")
+
+correct_answers <- data[, 10]
+model_columns <- data[, 11:ncol(data)]
+
+accuracy_results <- data.frame(Model = character(), Accuracy = numeric(), Lower_CI = numeric(), Upper_CI = numeric(), stringsAsFactors = FALSE)
+
+extract_core_answer <- function(answer) {
+  core_answer <- sub("([A-Za-z]+).*", "\\1", answer)
+  return(tolower(core_answer))
+}
+
+for (model in names(model_columns)) {
+  model_answers <- model_columns[[model]]
+
+  correct <- tolower(correct_answers)
+  answers <- sapply(model_answers, extract_core_answer) 
+  
+  answers[answers == "none"] <- "incorrect"
+  
+  correct_predictions <- sum(answers == correct)
+  total_valid <- length(answers) 
+  
+
+  accuracy <- correct_predictions / total_valid
+  
+
+  ci <- binom.test(correct_predictions, total_valid)
+  lower_ci <- ci$conf.int[1]  
+  upper_ci <- ci$conf.int[2] 
+  
+  accuracy_results <- rbind(accuracy_results, data.frame(Model = model, Accuracy = accuracy, Lower_CI = lower_ci, Upper_CI = upper_ci))
+}
+
+print(accuracy_results)
+```
+
+```{r}
+library(dplyr)
+
+data <- read.csv("/Users/sun/Desktop/data/Updated_mechanical_reasoning 2.csv")
+
+correct_answers <- data[, 10]
+model_columns <- data[, 11:ncol(data)]
+
+accuracy_results <- data.frame(Model = character(), Accuracy = numeric(), Lower_CI = numeric(), Upper_CI = numeric(), stringsAsFactors = FALSE)
+
+extract_core_answer <- function(answer) {
+
+  core_answer <- sub("([A-Za-z]+).*", "\\1", answer)
+  return(tolower(core_answer)) 
+}
+
+
+for (model in names(model_columns)) {
+  model_answers <- model_columns[[model]]
+  
+
+  correct <- tolower(correct_answers)
+  answers <- sapply(model_answers, extract_core_answer)  
+  
+
+  answers[answers == "none"] <- "incorrect"
+  
+
+  correct_predictions <- sum(answers == correct)
+  total_valid <- length(answers)  
+  
+
+  accuracy <- correct_predictions / total_valid
+  
+
+  ci <- binom.test(correct_predictions, total_valid)
+  lower_ci <- ci$conf.int[1]
+  upper_ci <- ci$conf.int[2]
+  
+
+  accuracy_results <- rbind(accuracy_results, data.frame(Model = model, Accuracy = accuracy, Lower_CI = lower_ci, Upper_CI = upper_ci))
+}
+
+
+accuracy_results <- accuracy_results %>%
+  arrange(desc(Accuracy))
+
+
+print(accuracy_results)
+```
+
+
+```{r}
+library(ggplot2)
+
+
+ggplot(accuracy_results, aes(x = reorder(Model, Accuracy), y = Accuracy)) + 
+  geom_bar(stat = "identity", fill = "steelblue") + 
+  geom_errorbar(aes(ymin = Lower_CI, ymax = Upper_CI), width = 0.2) + 
+  coord_flip() +  
+  theme_minimal() + 
+  labs(x = "Model", y = "Accuracy", title = "Model Accuracy with 95% Confidence Intervals")
+
+```
+
+```{r}
+library(dplyr)
+category_counts <- data %>%
+  count(Sec..Label)
+print(category_counts)
+```
+```{r}
+
+library(fmsb)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+label_names <- c("System Stability", "Pulley Systems", "Gear Systems", 
+                 "Leverage Principle", "Inertia and Motion", "Fluid Systems", 
+                 "Life Knowledge")  
+
+# 假设数据已经加载为 'data'
+# 定义函数提取核心答案并计算模型准确率（与之前的代码相同）
+extract_core_answer <- function(answer) {
+  core_answer <- sub("([A-Za-z]+).*", "\\1", answer)
+  return(tolower(core_answer))
+}
+
+accuracy_data <- data.frame()
+
+# 计算每个模型在每个Sec.Label类别中的准确率
+for (label in unique(sec_labels)) {
+  label_data <- data[sec_labels == label, ]
+  correct_answers <- tolower(label_data[, 10])
+  model_columns <- label_data[, 11:ncol(data)]
+  
+  for (model in names(model_columns)) {
+    model_answers <- model_columns[[model]]
+    answers <- sapply(model_answers, extract_core_answer)
+    answers[answers == "none"] <- "incorrect"
+    correct_predictions <- sum(answers == correct_answers)
+    total_valid <- length(answers)
+    accuracy <- correct_predictions / total_valid
+    
+    accuracy_data <- rbind(accuracy_data, data.frame(Sec.Label = label, Model = model, Accuracy = accuracy))
+  }
+}
+
+
+accuracy_data <- accuracy_data %>%
+  mutate(Sec.Label = factor(Sec.Label, levels = 1:7, labels = label_names))
+
+
+accuracy_wide <- accuracy_data %>%
+  pivot_wider(names_from = Sec.Label, values_from = Accuracy) %>%
+  group_by(Model) %>%
+  summarise(across(everything(), mean, na.rm = TRUE))
+
+output_dir <- "radar_charts"
+dir.create(output_dir, showWarnings = FALSE)
+
+for (model in unique(accuracy_wide$Model)) {
+  model_data <- accuracy_wide %>% filter(Model == model) %>% select(-Model)
+  
+  radar_data <- rbind(rep(1, ncol(model_data)), rep(0, ncol(model_data)), model_data)
+  
+  radarchart(radar_data, axistype = 1,
+             pcol = rgb(0.2, 0.5, 0.5, 0.9),
+             pfcol = rgb(0.2, 0.5, 0.5, 0.5),
+             plwd = 4,
+             cglcol = "grey",
+             cglty = 1,
+             axislabcol = "grey",
+             caxislabels = c(0, 0.25, 0.5, 0.75, 1),
+             cglwd = 0.8,
+             vlcex = 0.8)
+  
+  title(main = paste(model))
+  
+  file_name <- paste0(output_dir, "/", model, "_radar_chart.png")
+  ggsave(file_name, width = 8, height = 8)
+}
+
+
+
+library(ggplot2)
+library(dplyr)
+
+# 假设数据已经加载为 'accuracy_data'，并且 'Sec.Label' 已替换为具体名称
+# 计算每个分类的平均准确率
+category_accuracy <- accuracy_data %>%
+  group_by(Sec.Label) %>%
+  summarise(Average_Accuracy = mean(Accuracy, na.rm = TRUE)) %>%
+  arrange(desc(Average_Accuracy))  # 按照准确率从高到低排序
+
+# 绘制条形图，横向放置，y轴范围从0到1，并标注准确率
+ggplot(category_accuracy, aes(x = reorder(Sec.Label, Average_Accuracy), y = Average_Accuracy)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  coord_flip() +  # 横向放置
+  geom_text(aes(label = scales::percent(Average_Accuracy, accuracy = 0.01)), 
+            hjust = -0.1, size = 4) +  # 在条形图上标注准确率，保留两位小数
+  labs(title = "", x = "", y = "Average Accuracy") +
+  theme_minimal() +
+  ylim(0, 1)  # 设置y轴范围为0到1
+
+# 计算每个分类的平均准确率
+category_accuracy <- accuracy_data %>%
+  group_by(Sec.Label) %>%
+  summarise(Average_Accuracy = mean(Accuracy, na.rm = TRUE)) %>%
+  arrange(desc(Average_Accuracy))
+
+# 计算每个分类在总体中的占比
+category_accuracy <- category_accuracy %>%
+  mutate(Percentage = Average_Accuracy / sum(Average_Accuracy))
+
+# 绘制饼图并显示百分比，同时修改图例标题为 Category
+ggplot(category_accuracy, aes(x = "", y = Average_Accuracy, fill = Sec.Label)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar("y", start = 0) +  # 使用极坐标将条形图转换为饼图
+  theme_void() +  # 去除背景
+  labs(title = "", fill = "Category") +  # 修改图例名称为Category
+  scale_fill_brewer(palette = "Set3") +  # 设置颜色
+  geom_text(aes(label = scales::percent(Percentage, accuracy = 0.1)), 
+            position = position_stack(vjust = 0.5))  # 在色块上显示百分比
+
+
+
+
+library(fmsb)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(RColorBrewer)
+
+# 创建映射替换Sec.Label的名称
+label_names <- c("System Stability", "Pulley Systems", "Gear Systems", 
+                 "Leverage Principle", "Inertia and Motion", "Fluid Systems", 
+                 "Life Knowledge")
+
+# 假设数据已经加载为 'data'
+# 定义函数提取核心答案并计算模型准确率
+extract_core_answer <- function(answer) {
+  core_answer <- sub("([A-Za-z]+).*", "\\1", answer)
+  return(tolower(core_answer))
+}
+
+accuracy_data <- data.frame()
+
+# 计算每个模型在每个Sec.Label类别中的准确率
+for (label in unique(sec_labels)) {
+  label_data <- data[sec_labels == label, ]
+  correct_answers <- tolower(label_data[, 10])
+  model_columns <- label_data[, 11:ncol(data)]
+  
+  for (model in names(model_columns)) {
+    model_answers <- model_columns[[model]]
+    answers <- sapply(model_answers, extract_core_answer)
+    answers[answers == "none"] <- "incorrect"
+    correct_predictions <- sum(answers == correct_answers)
+    total_valid <- length(answers)
+    accuracy <- correct_predictions / total_valid
+    
+    accuracy_data <- rbind(accuracy_data, data.frame(Sec.Label = label, Model = model, Accuracy = accuracy))
+  }
+}
+
+# 将Sec.Label的数字替换为指定的名称
+accuracy_data <- accuracy_data %>%
+  mutate(Sec.Label = factor(Sec.Label, levels = 1:7, labels = label_names))
+
+# 准备数据以绘制合并的雷达图
+accuracy_wide <- accuracy_data %>%
+  pivot_wider(names_from = Sec.Label, values_from = Accuracy) %>%
+  group_by(Model) %>%
+  summarise(across(everything(), mean, na.rm = TRUE))
+
+# 将数据准备为雷达图需要的格式
+radar_data <- rbind(
+  rep(1, ncol(accuracy_wide) - 1),  # 最大值 1
+  rep(0, ncol(accuracy_wide) - 1),  # 最小值 0
+  accuracy_wide %>% select(-Model)  # 模型的数据
+)
+
+# 使用RColorBrewer生成足够的颜色，Set3是一个常用的多色调调色板
+n_models <- nrow(accuracy_wide)  # 模型数量
+colors <- colorRampPalette(brewer.pal(12, "Set3"))(n_models)
+
+# 绘制雷达图，将所有模型绘制在同一张图上
+radarchart(radar_data, axistype = 1,
+           pcol = colors,  # 使用生成的颜色
+           plwd = 2,
+           plty = 1,  # 线条类型
+           cglcol = c(rgb(0.8, 0.8, 0.8, 0.5)),  # 设置网格线为半透明的灰色
+           cglty = 1,  # 网格线类型
+           cglwd = c(1, 0.5, 0.5, 0.5, 1),  # 设置外层线更粗，内部线更细
+           axislabcol = "grey",  # 坐标标签颜色
+           caxislabels = c(0, "", "", "", 1),  # 只显示0和1的标签，隐藏中间的
+           vlcex = 0.8)
+
+# 计算每行展示多少个色块
+n_columns_per_row <- ceiling(n_models / 2)  # 每行放置的色块数量
+legend_x_start <- -1.5  # 图例开始的x坐标，减小此值将图例向左移动
+legend_y <- -1.3  # 图例的y坐标
+rect_width <- 0.12  # 色块的宽度
+rect_height <- 0.05  # 色块的高度
+spacing <- 0.15  # 每个色块和文本之间的水平间隔
+
+# 第一行图例
+for (i in seq_len(n_columns_per_row)) {
+  x_pos <- legend_x_start + (i - 1) * (rect_width + spacing)
+  
+  # 绘制色块
+  rect(xleft = x_pos, 
+       ybottom = legend_y - rect_height, 
+       xright = x_pos + rect_width, 
+       ytop = legend_y, 
+       col = colors[i], 
+       border = "transparent")
+  
+  # 添加模型名称，文本大小设为较小
+  text(x = x_pos + rect_width / 2, 
+       y = legend_y - 0.07, 
+       labels = accuracy_wide$Model[i], 
+       cex = 0.37,  # 将字体设为更小的值
+       adj = 0.5)
+}
+
+# 第二行图例
+for (i in seq((n_columns_per_row + 1), n_models)) {
+  x_pos <- legend_x_start + (i - n_columns_per_row - 1) * (rect_width + spacing)
+  
+  # 绘制色块
+  rect(xleft = x_pos, 
+       ybottom = legend_y - rect_height - 0.1,  # 第二行需要向下移动
+       xright = x_pos + rect_width, 
+       ytop = legend_y - 0.1, 
+       col = colors[i], 
+       border = "transparent")
+  
+  # 添加模型名称，文本大小设为较小
+  text(x = x_pos + rect_width / 2, 
+       y = legend_y - 0.17,  # 第二行文本向下移动
+       labels = accuracy_wide$Model[i], 
+       cex = 0.37,  # 将字体设为更小的值
+       adj = 0.5)
+}
+```
+
+
+

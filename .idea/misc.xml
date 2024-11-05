@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Black">
+    <option name="sdkName" value="Python 3.9 (myoScale_2)" />
+  </component>
+  <component name="GithubDefaultAccount">
+    <option name="defaultAccountId" value="f0d2d0de-2a6d-4850-aa3d-65b4b3029ec3" />
+  </component>
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.9 (myoScale_2)" project-jdk-type="Python SDK" />
+</project>

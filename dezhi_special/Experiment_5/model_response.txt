@@ -1,0 +1,3 @@
+answer: a 10 lb
+
+reason: the diagram shows a 10-pound weight hanging from a spring the label on the box clearly indicates that its weight is 10 lb

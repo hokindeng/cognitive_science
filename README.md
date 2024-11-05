@@ -67,7 +67,7 @@ python mov2png.py
 
 Check accuracy using Gemini
 ```
-python gemini-as-the-judge.py --dir ./data/Claude_Experiment_Mechanical_Reasoning
+python gemini-as-the-judge.py --dir ./data/dezhi_special
 ```
 
 - Navigate to the desired cognitive task directory (e.g., Mechanical_Reasoning).

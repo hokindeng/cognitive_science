@@ -1,0 +1,4 @@
+Question:
+<dezhi-special.png>In the picture, what is the weight? A. 10lb B. 20lb C. 30lb
+Answer: B
+Reason:

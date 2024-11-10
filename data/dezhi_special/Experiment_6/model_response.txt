@@ -1,3 +1,4 @@
-The answer is **A. 10lb**. 
+the weight shown in the picture is \(10 \, \text{lb}\) the box is labeled with "10 lb," indicating the weight of the object suspended by the spring
 
-The weight is directly labeled on the box in the picture. 
+answer: a 10lb  
+reason: the weight of the object is directly labeled as "10 lb" on the box

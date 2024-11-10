@@ -1,3 +1,5 @@
-The answer is **A. 10lb**.
+the weight shown in the picture is labeled as "10 lb"
 
-The diagram shows a weight of 10lb hanging from a spring. The weight itself is the force that is being applied to the spring, so the weight is 10lb. 
+answer: a 10 lb
+
+reason: the weight is explicitly noted on the image as "10 lb"

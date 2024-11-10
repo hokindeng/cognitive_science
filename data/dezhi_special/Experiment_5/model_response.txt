@@ -1,3 +1,5 @@
-The answer is **A. 10lb**. 
+the weight in the picture is labeled as 10 lb, so the correct answer is:
 
-The picture shows a spring with a weight attached to it. The weight is labeled as 10lb. 
+a 10 lb
+
+reason: the label on the suspended object clearly states it is 10 lb
